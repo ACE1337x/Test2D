@@ -53,6 +53,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = EntityAttributes)
 		int numPierces = 0;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = EntityAttributes)
+		FVector initialLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = EntityAttributes)
+		float MaxProjectileDistance;
+
 	void ProjectileHit_Implementation(AActor * other, FVector locationOfCollision, bool &stopProjectile);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Skill")
 		void ProjectileHit(AActor * other, FVector locationOfCollision, bool &stopProjectile);

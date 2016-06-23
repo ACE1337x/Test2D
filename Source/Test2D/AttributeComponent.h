@@ -32,6 +32,8 @@ private:
 	UPROPERTY(Replicated)
 		bool Alive;
 
+	UPROPERTY(Replicated)
+		int skillCounter = 0;
 
 	typedef TMap<UAttributeComponent *, TArray<ATest2DAlly*>> TAttribMap;
 	typedef TMap<TSubclassOf<ATest2DAlly>, TAttribMap> TStatusMap;
@@ -189,6 +191,9 @@ public:
 
 	TMap<UAttributeComponent*, TArray< ADamageTextActor*>> DamageTextArr;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Test")
-		int totalSkillsUsed = 0;
+	UFUNCTION(Server, WithValidation, Reliable, BlueprintCallable, Category = "DamageTextUse")
+		void incrSkillUseID();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "DamageTextUse")
+		int getSkillUseID() { return skillCounter; }
 };

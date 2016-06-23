@@ -53,6 +53,7 @@ enum class EDmgType : uint8
 {
 	DT_Skill,
 	DT_OnHit,
+	DT_NumHitEffect,
 	DT_DoT,
 	DT_Heal,
 	DT_Reflect,

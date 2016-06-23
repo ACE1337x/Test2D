@@ -32,7 +32,7 @@ ABaseProjectile::ABaseProjectile()
 	//Sprite_Back = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("PaperFlipBook"));
 	if (Sprite)
 	{
-		Sprite->AttachTo(Sphere);
+		Sprite->SetupAttachment(Sphere);
 		//Sprite_Back->AttachParent = Sprite;
 
 		Sprite->AlwaysLoadOnClient = true;
@@ -70,7 +70,7 @@ ABaseProjectile::ABaseProjectile()
 	if (ParticleSystem)
 	{
 
-		ParticleSystem->AttachTo(Sphere);
+		ParticleSystem->SetupAttachment(Sphere);
 	}
 
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
@@ -95,14 +95,18 @@ ABaseProjectile::ABaseProjectile()
 void ABaseProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-
+	initialLocation = GetActorLocation();
 }
 
 // Called every frame
 void ABaseProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	if (FVector::DistSquared(GetActorLocation(), initialLocation) > (MaxProjectileDistance * MaxProjectileDistance))
+	{
+		StopSpinning(nullptr);
+		Destroy();
+	}
 }
 
 void ABaseProjectile::Destroyed()
@@ -175,7 +179,7 @@ void ABaseProjectile::StopSpinning_Implementation(AActor* attachTo)
 		ProjectileMovement->Deactivate();
 		if (attachTo)
 		{
-			AttachRootComponentToActor(attachTo, NAME_None, EAttachLocation::KeepWorldPosition, true);
+			AttachToActor(attachTo, FAttachmentTransformRules::KeepWorldTransform);
 		}
 	}
 }

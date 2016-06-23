@@ -27,7 +27,7 @@ ATest2DAlly::ATest2DAlly()
 	Sprite = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("PaperFlipBook"));
 	if (Sprite)
 	{
-		Sprite->AttachTo(Sphere);
+		Sprite->SetupAttachment(Sphere);
 		Sprite->AlwaysLoadOnClient = true;
 		Sprite->AlwaysLoadOnServer = true;
 		Sprite->bOwnerNoSee = false;
@@ -43,7 +43,7 @@ ATest2DAlly::ATest2DAlly()
 	ParticleSystem = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystem"));
 	if (ParticleSystem)
 	{
-		ParticleSystem->AttachTo(Sphere);
+		ParticleSystem->SetupAttachment(Sphere);
 	}
 
 	Sprite->SetIsReplicated(true);
@@ -146,7 +146,7 @@ void ATest2DAlly::Init(UAttributeComponent * _ownerAttribComp, UAttributeCompone
 		SkillHandler->LoadSkills(ownerAttribComp);
 
 	if (appliedTo && bAttachToAppliedTo)
-		GetRootComponent()->AttachTo(appliedTo->GetOwner()->GetRootComponent(), NAME_None, EAttachLocation::SnapToTargetIncludingScale, true);
+		GetRootComponent()->AttachToComponent(appliedTo->GetOwner()->GetRootComponent(),FAttachmentTransformRules::SnapToTargetIncludingScale);
 
 	OnInit();
 }

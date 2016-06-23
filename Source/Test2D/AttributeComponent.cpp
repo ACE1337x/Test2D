@@ -557,6 +557,12 @@ void UAttributeComponent::updateStatusBar_RepNotify()
 {
 	onUpdateStatusBarDelegate.Broadcast();
 }
+void UAttributeComponent::incrSkillUseID_Implementation()
+{
+	++skillCounter;
+}
+bool UAttributeComponent::incrSkillUseID_Validate() { return true; }
+
 void UAttributeComponent::updateStatusBarStatuses_Implementation(bool checkForShowOnStatusBar)
 {
 	if (!GetOwner()->HasAuthority())
@@ -606,6 +612,8 @@ void UAttributeComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >
 	DOREPLIFETIME(UAttributeComponent, bIsInvuln);
 
 	DOREPLIFETIME(UAttributeComponent, statusBarStatuses);
+	DOREPLIFETIME(UAttributeComponent, skillCounter);
+
 
 	//DOREPLIFETIME(UAttributeComponent, totalSkillsUsed);
 

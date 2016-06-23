@@ -87,7 +87,7 @@ ATest2DCharacter::ATest2DCharacter()
 	if (wallSlideCollision)
 	{
 		//wallSlideCollision->AttachTo(GetRootComponent());
-		wallSlideCollision->AttachParent = GetRootComponent();
+		wallSlideCollision->SetupAttachment(GetRootComponent());
 		wallSlideCollision->SetBoxExtent(FVector(8.0f, 5.0f, 5.0f), true);
 
 		wallSlideCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -98,7 +98,7 @@ ATest2DCharacter::ATest2DCharacter()
 	if (SceneComponent)
 	{
 		SceneComponent->ComponentTags.Add("HpBarSlot");
-		SceneComponent->AttachParent = GetCapsuleComponent();
+		SceneComponent->SetupAttachment(GetCapsuleComponent());
 	}
 
 	// Enable replication on the Sprite component so animations show up when networked

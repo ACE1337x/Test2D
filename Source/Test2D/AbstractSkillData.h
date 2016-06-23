@@ -38,6 +38,8 @@ struct FSkillInteractionInfo
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FSkillInteractionInfo")
 		bool movementSkill = 0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FSkillInteractionInfo")
+		bool isNumHitsModifiable = true;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FSkillInteractionInfo")
 		bool knockbackUseVelocity = 0;
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FSkillInteractionInfo")
 	//	bool knockbackUseVectorFromLocation = 0;

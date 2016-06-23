@@ -111,14 +111,11 @@ void UAbstractSkill::setSkillHitBox() {
 	case ESkillCollisionType::SC_Box: //box
 	{
 		hitBox = FCollisionShape::MakeBox(skillExtents * 0.5f);
-		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, "Box Collision");
-		//hitBox = new GhostControl(new BoxCollisionShape(skillExtents));
 		break;
 	}
 	case ESkillCollisionType::SC_Circle: // sphere
 	{
 		hitBox = FCollisionShape::MakeSphere(skillExtents.X * 0.5f);
-		//hitBox = new GhostControl(new CylinderCollisionShape(skillExtents, 1));
 		break;
 	}
 	}
@@ -131,14 +128,12 @@ void UAbstractSkill::update_Implementation(float dt, FVector ToTargetDir, FVecto
 
 	if ((owner && !owner->HasAuthority()) || !owner)
 	{
-		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Cyan, FString("Skill Owner does not exist or owner does not have authority ") + GetClass()->GetDisplayNameText().ToString());
 		return;
 	}
 
 	if (!owner->IsValidLowLevel() || !attributeComponent)
 	{
 		bSkillUpdating = false;
-		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, FString("Skill Doesnt have Attribute Component ") + GetClass()->GetDisplayNameText().ToString());
 		return;
 	}
 
@@ -161,7 +156,6 @@ void UAbstractSkill::update_Implementation(float dt, FVector ToTargetDir, FVecto
 		if (currNumHits < totalHits)
 		{
 
-			//GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Cyan, FString::SanitizeFloat(currSkillDuration));
 			possibleTargets.Empty();
 
 			FVector useSkillDir = owner->GetActorForwardVector();
@@ -220,7 +214,12 @@ void UAbstractSkill::update_Implementation(float dt, FVector ToTargetDir, FVecto
 					}
 				}
 			}
-			delay = (skillData.skillUpdateData.timeBetweenHits / attributeComponent->totalStats.AttackSpeed) / (totalHits / skillData.skillData.numHits);
+			delay = skillData.skillUpdateData.timeBetweenHits;
+			if (skillData.skillInteractionInfo.isNumHitsModifiable)
+			{
+				delay /= ((float)totalHits / (float)skillData.skillData.numHits);
+				delay /= attributeComponent->totalStats.AttackSpeed;
+			}
 
 			currNumHits++;
 			if (currNumHits == totalHits)
@@ -229,10 +228,6 @@ void UAbstractSkill::update_Implementation(float dt, FVector ToTargetDir, FVecto
 		else
 		{
 			SkillCompleted();
-			//GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Yellow, FString::SanitizeFloat(totalSkillDuration));
-			//GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Red, FString::SanitizeFloat(currSkillDuration));
-
-			//GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Cyan, FString::SanitizeFloat(totalHits));
 			return;
 		}
 	}
@@ -341,8 +336,9 @@ void UAbstractSkill::activateSkill()
 {
 	if (attributeComponent)
 	{
-		skillUseID = ++(attributeComponent->totalSkillsUsed);
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, FString::FromInt(skillUseID));
+		attributeComponent->incrSkillUseID();
+
+		skillUseID = attributeComponent->getSkillUseID();
 
 		totalHits = GetTotalHits();
 
@@ -406,10 +402,10 @@ bool UAbstractSkill::canBeUsed() {
 
 int UAbstractSkill::GetTotalHits()
 {
-	if (skillData.skillData.numHits > 0)
-		return (skillData.skillData.numHits + attributeComponent->totalStats.AdditionalHits) * (1 + attributeComponent->totalStats.HitMultiplier);
+	if (skillData.skillData.numHits > 0 && skillData.skillInteractionInfo.isNumHitsModifiable)
+		return ((skillData.skillData.numHits + attributeComponent->totalStats.AdditionalHits) * (1 + attributeComponent->totalStats.HitMultiplier));
 
-	return 0;
+	return skillData.skillData.numHits;
 }
 
 void UAbstractSkill::InitSkillDescription_Implementation()
