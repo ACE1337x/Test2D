@@ -73,28 +73,30 @@ enum class EStatusType : uint8
 UENUM(BlueprintType)		//"BlueprintType" is essential to include
 enum class EItemType : uint8
 {
-	IT_EQUIPPABLE,
-	IT_USABLE,
-	IT_ETC,
+	EQUIPPABLE,
+	USABLE,
+	ETC,
 };
 
 UENUM(BlueprintType)		//"BlueprintType" is essential to include
 enum class EEquipType : uint8
 {
-	ET_NONE,
-	ET_HAT,
-	ET_WEAPON,
-	ET_TOP,
-	ET_BOTTOM,
-	ET_ACCESSORY,
+	WEAPON,
+	HELMET,
+	CHEST,
+	PANTS,
+	BOOTS,
+	GLOVES,
+	ACCESSORY,
+	NONE,
 };
 UENUM(BlueprintType)		//"BlueprintType" is essential to include
 enum class EWeaponType : uint8
 {
-	WT_NONE,
-	WT_THROWINGSTAR,
-	WT_BOW,
-	WT_GUN,
-	WT_SWORD,
-	WT_STAFF,
+	THROWINGSTAR,
+	BOW,
+	GUN,
+	SWORD,
+	STAFF,
+	NONE,
 };

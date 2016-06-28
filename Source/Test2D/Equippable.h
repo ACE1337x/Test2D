@@ -24,10 +24,10 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-		EEquipType EquipType = EEquipType::ET_NONE;
+		EEquipType EquipType = EEquipType::NONE;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-		EWeaponType WeaponType = EWeaponType::WT_NONE;
+		EWeaponType WeaponType = EWeaponType::NONE;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item_Stats")
 		FPlayerAttributes baseStats;
@@ -37,4 +37,11 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item_Stats")
 		TArray<FStatusApplicationData> ItemEquipPassive;
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Item")
+		void UseFunc();
+
+	void Init_Implementation(UAttributeComponent * AttribComp, UInventoryComponent * InventoryComp);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Item")
+		void Init(UAttributeComponent * AttribComp, UInventoryComponent * InventoryComp);
 };

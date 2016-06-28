@@ -115,9 +115,9 @@ void ATest2DCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	InventoryComponent->Init();
 	AttributeComponent->Init();
 	SkillHandler->Init(AttributeComponent);
+	InventoryComponent->Init(AttributeComponent);
 
 }
 void ATest2DCharacter::TryUseSkill_Implementation(ESkillSlotTypes skillSlotToUse)

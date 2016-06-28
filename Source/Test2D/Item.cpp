@@ -2,7 +2,8 @@
 
 #include "Test2D.h"
 #include "Item.h"
-
+#include "AttributeComponent.h"
+#include "InventoryComponent.h"
 
 // Sets default values
 AItem::AItem()
@@ -25,3 +26,28 @@ void AItem::Tick(float DeltaTime)
 
 }
 
+void AItem::UseItem()
+{
+	UseFunc();
+	InventoryComponent->onUpdateInventoryDelegate.Broadcast();
+}
+
+void AItem::UseFunc_Implementation()
+{
+	if (ItemType == EItemType::USABLE)
+	{
+		CurrStack -= 1;
+		if (CurrStack <= 0)
+		{
+			Destroy();
+		}
+	}
+}
+
+
+
+void AItem::Init_Implementation(UAttributeComponent * AttribComp, UInventoryComponent * InventoryComp)
+{
+	AttributeComponent = AttribComp;
+	InventoryComponent = InventoryComp;
+}

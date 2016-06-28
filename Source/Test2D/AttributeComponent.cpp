@@ -591,7 +591,6 @@ UTexture2D * UAttributeComponent::getStatusIcon(TSubclassOf<ATest2DAlly> statusC
 	return statusClass.GetDefaultObject()->StatusIcon;
 }
 
-
 void UAttributeComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);

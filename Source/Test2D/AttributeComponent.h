@@ -152,9 +152,6 @@ public:
 		void RecalculateTotalStats();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Attributes)
-		TArray<AEquippable*> EquippedItems;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Attributes)
 		TArray<FStatusApplicationData> SelfStatusApplication_OnHit;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Attributes)
@@ -196,4 +193,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "DamageTextUse")
 		int getSkillUseID() { return skillCounter; }
+
+	UPROPERTY(BlueprintReadWrite, Category = "Test")
+		TArray<AEquippable*> EquippedItems;
 };
+
