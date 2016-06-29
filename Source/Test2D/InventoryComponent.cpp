@@ -73,7 +73,6 @@ void UInventoryComponent::EquipItem(AEquippable * Equip)
 		return;
 
 	AEquippable * EquippedSlotItem = EquippedItems[(uint8)Equip->EquipType];
-	
 
 	if (AttributeComponent->EquippedItems.Find(Equip) != INDEX_NONE)
 	{
@@ -86,9 +85,10 @@ void UInventoryComponent::EquipItem(AEquippable * Equip)
 	else
 	{
 		//equip
+		AttributeComponent->EquippedItems.Remove(EquippedSlotItem);
 		InventoryItems[InventoryItems.Find(Equip)] = EquippedSlotItem;
-		AttributeComponent->EquippedItems.Add(Equip);
 
+		AttributeComponent->EquippedItems.Add(Equip);
 		EquippedItems[(uint8)Equip->EquipType] = Equip;
 	}
 	AttributeComponent->RecalculateTotalStats();
