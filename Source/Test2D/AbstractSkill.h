@@ -12,6 +12,7 @@
 /**
  *
  */
+class ATest2DCharacter;
 class UAttributeComponent;
 class UTexture2D;
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSkillHitDelegate, UAttributeComponent *, Hit);
@@ -56,9 +57,12 @@ public:
 
 	virtual bool IsSupportedForNetworking() const override { return true; };
 
-	void Init(AActor * owner, UAttributeComponent * attributeComponent, AActor * instigator = nullptr);
+	void Init(ATest2DCharacter * _character, AActor * _owner);
+
 	void Destroy();
 
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = EntityAttributes)
+		ATest2DCharacter * Test2DCharacter;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Skill")
 		AActor * owner;
@@ -70,9 +74,6 @@ public:
 		AActor * instigator;
 	AActor * GetInstigator() { return instigator; }
 	void SetInstigator(AActor * newInstigator) { instigator = newInstigator; }
-
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = EntityAttributes)
-		UAttributeComponent * attributeComponent;
 
 	UPROPERTY(BlueprintReadWrite, Category = Movement)
 		ESkillMotion skillMotionType;
@@ -119,7 +120,7 @@ public:
 	UFUNCTION(NetMulticast, Reliable, BlueprintCallable, Category = "Skill")
 		void decrementCooldown(float dt);
 
-	void activateSkill();
+	void activateSkill(int _SkillUseID);
 	void cancelSkill();
 
 	float getCurrCooldown() { return currCooldown; }
@@ -128,7 +129,7 @@ public:
 		void update(float dt, FVector ToTargetDir, FVector LastMoveDir);
 
 	UFUNCTION(Server, WithValidation, Reliable, BlueprintCallable, Category = "Skill")
-		void skillHit(UAttributeComponent * hitAttribComp, AActor * hitObj, FAbstractSkillData otherSkillData, FVector hitLocation);
+		void skillHit(ATest2DCharacter * hitCharacter, FAbstractSkillData otherSkillData, FVector hitLocation);
 
 	UFUNCTION(NetMulticast, Reliable, BlueprintCallable, Category = "Skill")
 		void MulticastRPCFunc_spawnHitParticles(FVector hitLocation);

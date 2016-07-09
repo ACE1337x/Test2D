@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Test2D.h"
-#include "AttributeComponent.h"
+#include "Test2DCharacter.h"
 #include "DamageTextActor.h"
 
 
@@ -42,11 +42,11 @@ void ADamageTextActor::Tick(float DeltaTime)
 
 void ADamageTextActor::Destroyed()
 {
-	if (GetOwner())
+	if (GetOwner() && GetOwner()->GetClass()->IsChildOf(ATest2DCharacter::StaticClass()))
 	{
-		UAttributeComponent * ownerAttribComp = (UAttributeComponent*)(GetOwner()->GetComponentByClass(UAttributeComponent::StaticClass()));
-		if (ownerAttribComp)
-			ownerAttribComp->DamageTextArr[DamageCauser].Remove(this);
+		ATest2DCharacter * Test2DCharacter = (ATest2DCharacter *)GetOwner();
+
+		Test2DCharacter->DamageTextArr[DamageCauser].Remove(this);
 	}
 
 	Super::Destroyed();

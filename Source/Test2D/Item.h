@@ -38,25 +38,25 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 		FString ItemDescription;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")
 		int MaxStack = 1;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")
 		int CurrStack = 1;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")
 		UAttributeComponent * AttributeComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")
 		UInventoryComponent * InventoryComponent;
 
-	UFUNCTION(BlueprintCallable, Category = "Item")
+	UFUNCTION(Server, WithValidation, Reliable, BlueprintCallable, Category = "Item")
 		void UseItem();
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Item")
 		void UseFunc();
 
-	void Init_Implementation(UAttributeComponent * AttribComp, UInventoryComponent * InventoryComp);
+	void Init_Implementation(UInventoryComponent * InventoryComp);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Item")
-		void Init(UAttributeComponent * AttribComp, UInventoryComponent * InventoryComp);
+		void Init(UInventoryComponent * InventoryComp);
 };

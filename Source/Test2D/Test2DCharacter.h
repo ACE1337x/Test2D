@@ -4,6 +4,7 @@
 
 #include "PaperCharacter.h"
 #include "SkillHandlerComponent.h"
+#include "PlayerAttributes.h"
 #include "Test2DCharacter.generated.h"
 
 // This class is the default character for Test2D, and it is responsible for all
@@ -14,6 +15,13 @@
 //   The Sprite component (inherited from APaperCharacter) handles the visuals
 
 class UTextRenderComponent;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FDamageTakenDelegate, float, damageTaken, float, damageBeforeDefense, ATest2DCharacter *, damageCauser, EDmgType, DamageType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSkillHitDelegate, ATest2DCharacter *, hitCharacter, int, skillUseID);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FRespawnDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FUpdateStatsDelegate);
+
 
 UCLASS(config = Game)
 class ATest2DCharacter : public APaperCharacter
@@ -31,6 +39,7 @@ class ATest2DCharacter : public APaperCharacter
 		UTextRenderComponent* TextComponent;
 	virtual void Tick(float DeltaSeconds) override;
 private:
+
 protected:
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Movement")
 		bool wantsToJump = 0;
@@ -78,7 +87,7 @@ protected:
 
 	/** Called for side to side input */
 	UFUNCTION(/*Server, WithValidation, Reliable,*/ BlueprintCallable, Category = "Player Functions")
-		void UpdateCharacter();
+		void UpdateCharacter(float dt);
 
 	UFUNCTION(Server, WithValidation, Reliable)
 		virtual void UpdateRPC(FRotator ARot, FVector VLook, UPaperFlipbook * newAnimation);
@@ -102,17 +111,24 @@ protected:
 public:
 	ATest2DCharacter();
 
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Alive")
+		bool bIsAlive;
+
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Wallsliding")
 		bool wallSliding;
 
-	UPROPERTY(Category = Test2DCharacter,/* Replicated,*/ VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(Category = Test2DCharacter, Replicated, VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		USkillHandlerComponent * SkillHandler;
-	UPROPERTY(Category = Test2DCharacter, /* Replicated,*/ VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+
+	UPROPERTY(Category = Test2DCharacter,  Replicated, VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		class UAttributeComponent * AttributeComponent;
-	UPROPERTY(Category = Test2DCharacter, /* Replicated,*/ VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+
+	UPROPERTY(Category = Test2DCharacter,  Replicated, VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		class UInventoryComponent * InventoryComponent;
+
 	UPROPERTY(Category = Test2DCharacter, /* Replicated,*/ VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		UBoxComponent * wallSlideCollision;
+
 	UPROPERTY(Category = Test2DCharacter, /* Replicated,*/ VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		USceneComponent * SceneComponent;
 
@@ -135,6 +151,100 @@ public:
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = Direction)
 		FVector lookDir;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = StatChange_RepNotify, Category = Attributes)
+		FPlayerAttributes baseStats;
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = StatChange_RepNotify, Category = Attributes)
+		FPlayerAttributes totalStats;
+
+	UFUNCTION(Server, WithValidation, Reliable, BlueprintCallable, Category = Attributes)
+		void RecalculateTotalStats();
+
+	UFUNCTION(BlueprintCallable, Category = Attributes)
+		void StatChange_RepNotify();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = Attributes)
+		bool bPvpEnabled = 0;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category = Attributes)
+		bool bIsInvuln;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category = Attributes)
+		bool bIsEvading;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category = Attributes)
+		float hpRegenTimer;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category = Attributes)
+		int currHp;
+
+	float currRespawnTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Attributes)
+		float MaxRespawnTime = 5.0f;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category = Attributes)
+		int currJumps;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Attributes)
+		TSubclassOf<ADamageTextActor> damageTextActorStyle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = Attributes)
+		EAllianceType AllianceType = EAllianceType::AT_Player;
+
+	UFUNCTION(Server, WithValidation, Reliable, BlueprintCallable, Category = Attributes)
+		virtual void Heal(float HealAmount);
+
+	UFUNCTION(Server, WithValidation, Reliable, BlueprintCallable, Category = Attributes)
+		virtual void TogglePVP();
+
+	UFUNCTION(Server, WithValidation, Reliable, BlueprintCallable, Category = Attributes)
+		virtual void SetEvade(bool isEvade);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat)
+		TArray<FStatusApplicationData> SelfStatusApplication_OnHit;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat)
+		TArray<FStatusApplicationData> EnemyStatusApplication_OnHit;
+
+	UFUNCTION(BlueprintCallable, Category = Combat)
+		virtual bool canTarget(ATest2DCharacter * other);
+
+	UFUNCTION(Server, WithValidation, Reliable, BlueprintCallable, Category = Combat)
+		virtual void TakeDamageTest(
+			ATest2DCharacter * DamageCauser,
+			UObject * DamageSource,
+			int SkillUseID,
+			EDmgType DmgType,
+			FAbstractSkillData otherSkillData,
+			FPlayerAttributes otherAttributes,
+			FVector locationOfCollision,
+			TSubclassOf<ADamageTextActor> dmgTextActor);
+
+	void getKnockedBack(FVector knockBack);
+
+	UFUNCTION(NetMulticast, Reliable, BlueprintCallable, Category = Attributes)
+		void SpawnDamageText(TSubclassOf<ADamageTextActor> damageTextActor, float finalDmg, EDmgType DmgTextType, bool criticalHit, int MaxHp, ATest2DCharacter * DamageCauser, int DmgTextSpawnID);
+
+	TMap<ATest2DCharacter*, TArray< ADamageTextActor*>> DamageTextArr;
+
+	UFUNCTION(NetMulticast, Reliable, BlueprintCallable, Category = Combat)
+		virtual void Die();
+
+	UFUNCTION(Server, WithValidation, Reliable, BlueprintCallable, Category = Combat)
+		virtual void Respawn();
+
+	UPROPERTY(Replicated, BlueprintAssignable, Category = "Test2DCharacterDelegates")
+		FRespawnDelegate onRespawnDelegate;
+
+	UPROPERTY(Replicated, BlueprintAssignable, Category = "Test2DCharacterDelegates")
+		FSkillHitDelegate onSkillHitDelegate;
+
+	UPROPERTY(Replicated, BlueprintAssignable, Category = "Test2DCharacterDelegates")
+		FDamageTakenDelegate onTakeDamageDelegate;
+
+	UPROPERTY(BlueprintAssignable, Category = "Test2DCharacterDelegates")
+		FUpdateStatsDelegate onRecalculateTotalStats;
 
 	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;

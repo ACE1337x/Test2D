@@ -36,19 +36,19 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UAttributeComponent* AttributeComponent;
+	UFUNCTION(Server, WithValidation, Reliable, BlueprintCallable, Category = Attributes)
+		void RecalculateTotalStats();
+
+	class ATest2DCharacter * Test2DCharacter;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-		void Init(UAttributeComponent * OwnerAttribComp);
+		void Init(ATest2DCharacter * _Test2DCharacter);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 		int Currency = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 		int MaxInventorySize = 100;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-		TArray<AItem*> InventoryItems;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 		TArray<FItemLoadData> InventoryLoadData;
@@ -56,19 +56,25 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 		TArray<FItemLoadData> EquippedLoadData;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Inventory")
 		int SelectedIndex = -1;
 
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	UFUNCTION(Server, WithValidation, Reliable, BlueprintCallable, Category = "Inventory")
 		void SwapItems(int LHS, int RHS);
 
-	UPROPERTY(/*Replicated, */BlueprintAssignable, Category = "Test")
+	UPROPERTY(BlueprintAssignable, Category = "Test")
 		FInventoryEventDelegate onUpdateInventoryDelegate;
 
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	UFUNCTION(Server, WithValidation, Reliable, BlueprintCallable, Category = "Inventory")
 		void EquipItem(AEquippable * Equip);
 
-	UPROPERTY(/*Replicated, */BlueprintReadOnly, Category = "EquippedItems")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+		TArray<AItem*> InventoryItems;
+
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "EquippedItems")
 		TArray<AEquippable*>EquippedItems;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category = Attributes)
+		FPlayerAttributes totalStats;
 };
 

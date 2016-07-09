@@ -16,9 +16,14 @@ class TEST2D_API USkillHandlerComponent : public UActorComponent
 private:
 	bool ReplicateSubobjects(UActorChannel* channel, FOutBunch* bunch, FReplicationFlags* repFlags) override;
 	ESkillSlotTypes slotToUse = ESkillSlotTypes::SS_None;
+	UPROPERTY(Replicated)
+		int skillCounter = 0;
 public:
 
-	UAttributeComponent* AttributeComponent;
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "DamageTextUse")
+		int getSkillUseID() { return skillCounter; }
+
+	class ATest2DCharacter * Test2DCharacter;
 
 	// Sets default values for this component's properties
 	USkillHandlerComponent();
@@ -45,12 +50,12 @@ public:
 		void update(float DeltaTime);
 
 	UFUNCTION(/*NetMulticast, WithValidation, Reliable,*/ BlueprintCallable, Category = "Skills")
-		void LoadSkills(UAttributeComponent * attribComp);
+		void LoadSkills(ATest2DCharacter * character);
 	UFUNCTION(BlueprintCallable, Category = "Skills")
 		void ReInitSkills();
 
 	UFUNCTION(BlueprintCallable, Category = "Skills")
-		void Init(UAttributeComponent * attribComp);
+		void Init(ATest2DCharacter * character);
 
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Skills")
 		TArray<UAbstractSkill*> skillSlots;

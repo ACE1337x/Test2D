@@ -40,7 +40,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage Text Variables")
 		float Scale;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage Text Variables")
-		class UAttributeComponent * DamageCauser;
+		class ATest2DCharacter * DamageCauser;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage Text Variables")
 		int DmgTextSpawnID = 0;
 

@@ -9,7 +9,7 @@
 class UPaperFlipbookComponent;
 class UProjectileMovementComponent;
 class USkillHandlerComponent;
-class UAttributeComponent;
+class ATest2DCharacter;
 
 UCLASS()
 class TEST2D_API ATest2DAlly : public AActor
@@ -34,14 +34,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
 		UTexture2D * StatusIcon;
 
-	UPROPERTY(Category = "Ally", Replicated, VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-		USkillHandlerComponent * SkillHandler;
+	//UPROPERTY(Category = "Ally", Replicated, VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	//	USkillHandlerComponent * SkillHandler;
 
 	UPROPERTY(Category = "Ally", Replicated, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-		UAttributeComponent * ownerAttribComp;
+		ATest2DCharacter * appliedBy;
 
 	UPROPERTY(Category = "Ally", Replicated, VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-		UAttributeComponent * appliedTo;
+		ATest2DCharacter * appliedTo;
 
 	void OnInit_Implementation();
 	UFUNCTION(/*NetMulticast, Reliable,*/ BlueprintNativeEvent, BlueprintCallable, Category = "Status")
@@ -70,7 +70,7 @@ public:
 		float currTickInterval;
 
 	UFUNCTION(BlueprintCallable, Category = "Allies")
-		void Init(UAttributeComponent * _ownerAttribComp, UAttributeComponent * _appliedTo, float lifeTime);
+		void Init(ATest2DCharacter * _appliedBy, ATest2DCharacter * _appliedTo, float lifeTime);
 
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ally", meta = (AllowPrivateAccess = "true"))

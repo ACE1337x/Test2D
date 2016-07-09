@@ -3,7 +3,8 @@
 #include "Test2D.h"
 #include "Item.h"
 #include "InventoryComponent.h"
-#include "AttributeComponent.h"
+#include "Test2DCharacter.h"
+#include "Net/UnrealNetwork.h"
 
 
 // Sets default values for this component's properties
@@ -17,12 +18,14 @@ UInventoryComponent::UInventoryComponent()
 	// ...
 }
 
-void UInventoryComponent::Init(UAttributeComponent * OwnerAttribComp)
+void UInventoryComponent::Init(ATest2DCharacter * _Test2DCharacter)
 {
+	GEngine->AddOnScreenDebugMessage(-1, 2.0f, GetOwner()->HasAuthority() ? FColor::Red : FColor::Cyan, GetOwner()->HasAuthority() ? "Server" : "Client");
+
 	InventoryItems.SetNumZeroed(MaxInventorySize);
 	InventoryLoadData.SetNumZeroed(MaxInventorySize);
 
-	AttributeComponent = OwnerAttribComp;
+	Test2DCharacter = _Test2DCharacter;
 
 	EquippedItems.SetNum(6);
 	
@@ -31,19 +34,16 @@ void UInventoryComponent::Init(UAttributeComponent * OwnerAttribComp)
 		if (InventoryLoadData[i].ItemClass)
 		{
 			InventoryItems[i] = GetOwner()->GetWorld()->SpawnActor<AItem>(InventoryLoadData[i].ItemClass);
-			InventoryItems[i]->Init(OwnerAttribComp, this);
+			InventoryItems[i]->Init(this);
 		}
 	}
-
 }
 
 // Called when the game starts
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
 	// ...
-	
 }
 
 
@@ -51,48 +51,72 @@ void UInventoryComponent::BeginPlay()
 void UInventoryComponent::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
 {
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
-
 	// ...
 }
 
-void UInventoryComponent::SwapItems(int LHS, int RHS)
+void UInventoryComponent::SwapItems_Implementation(int LHS, int RHS)
 {
 	if (LHS < 0 || RHS < 0)
 		return;
 
-	InventoryItems.Swap(LHS, RHS);
-	onUpdateInventoryDelegate.Broadcast();
-}
+	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, "Swapping Item " + FString::FromInt(LHS) + " <-> " + FString::FromInt(RHS));
 
-void UInventoryComponent::EquipItem(AEquippable * Equip)
+	InventoryItems.Swap(LHS, RHS);
+}
+bool UInventoryComponent::SwapItems_Validate(int LHS, int RHS) { return true; }
+
+void UInventoryComponent::EquipItem_Implementation(AEquippable * Equip)
 {
+	if (!GetOwner()->HasAuthority())
+		return;
+
 	if (!Equip)
 		return;
 
-	if (!AttributeComponent)
+	if (!Test2DCharacter)
 		return;
 
 	AEquippable * EquippedSlotItem = EquippedItems[(uint8)Equip->EquipType];
 
-	if (AttributeComponent->EquippedItems.Find(Equip) != INDEX_NONE)
+	if (EquippedItems.Find(Equip) != INDEX_NONE)
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, "Unequipping Item");
 		//unequip
-		AttributeComponent->EquippedItems.Remove(Equip);
 		InventoryItems[InventoryItems.Find(nullptr)] = Equip;
 
 		EquippedItems[(uint8)Equip->EquipType] = nullptr;
 	}
 	else
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, "Equipping Item");
 		//equip
-		AttributeComponent->EquippedItems.Remove(EquippedSlotItem);
 		InventoryItems[InventoryItems.Find(Equip)] = EquippedSlotItem;
 
-		AttributeComponent->EquippedItems.Add(Equip);
 		EquippedItems[(uint8)Equip->EquipType] = Equip;
 	}
-	AttributeComponent->RecalculateTotalStats();
-	onUpdateInventoryDelegate.Broadcast();
+
+	Test2DCharacter->RecalculateTotalStats();
+}
+
+
+void UInventoryComponent::RecalculateTotalStats_Implementation()
+{
+	totalStats = FPlayerAttributes();
+
+	for (int i = 0; i < EquippedItems.Num(); i++)
+	{
+		if (EquippedItems[i])
+			totalStats = UStructHelperFunctions::AddAttributes(EquippedItems[i]->totalStats, totalStats);
+	}
+}
+bool UInventoryComponent::RecalculateTotalStats_Validate()
+{
+	return true;
+}
+
+bool UInventoryComponent::EquipItem_Validate(AEquippable * Equip)
+{
+	return true;
 }
 
 //void UInventoryComponent::UseItem(AItem * itemToUse)
@@ -102,3 +126,22 @@ void UInventoryComponent::EquipItem(AEquippable * Equip)
 //	if (itemToUse)
 //		itemToUse->UseItem(AttribComp, this);
 //}
+
+void UInventoryComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
+{
+	DOREPLIFETIME(UInventoryComponent, EquippedItems);
+	DOREPLIFETIME(UInventoryComponent, InventoryItems);
+
+	DOREPLIFETIME(UInventoryComponent, InventoryLoadData);
+
+	DOREPLIFETIME(UInventoryComponent, Currency);
+	DOREPLIFETIME(UInventoryComponent, MaxInventorySize);
+	DOREPLIFETIME(UInventoryComponent, SelectedIndex);
+
+	DOREPLIFETIME(UInventoryComponent, totalStats);
+
+
+
+
+
+}

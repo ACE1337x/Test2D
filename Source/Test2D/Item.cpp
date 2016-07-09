@@ -4,13 +4,14 @@
 #include "Item.h"
 #include "AttributeComponent.h"
 #include "InventoryComponent.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AItem::AItem()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	bReplicates = true;
 }
 
 // Called when the game starts or when spawned
@@ -26,10 +27,14 @@ void AItem::Tick(float DeltaTime)
 
 }
 
-void AItem::UseItem()
+void AItem::UseItem_Implementation()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, HasAuthority() ? "Server" : "Client");
 	UseFunc();
-	InventoryComponent->onUpdateInventoryDelegate.Broadcast();
+}
+bool AItem::UseItem_Validate()
+{
+	return true;
 }
 
 void AItem::UseFunc_Implementation()
@@ -44,10 +49,18 @@ void AItem::UseFunc_Implementation()
 	}
 }
 
-
-
-void AItem::Init_Implementation(UAttributeComponent * AttribComp, UInventoryComponent * InventoryComp)
+void AItem::Init_Implementation(UInventoryComponent * InventoryComp)
 {
-	AttributeComponent = AttribComp;
-	InventoryComponent = InventoryComp;
+	//if (InventoryComp->GetOwner()->HasAuthority())
+	//{
+		InventoryComponent = InventoryComp;/*
+		SetOwner(InventoryComponent->GetOwner());
+	}*/
+}
+
+void AItem::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
+{
+	DOREPLIFETIME(AItem, InventoryComponent);
+	DOREPLIFETIME(AItem, CurrStack);
+	DOREPLIFETIME(AItem, MaxStack);
 }

@@ -128,29 +128,26 @@ void ABaseProjectile::ProjectileHit_Implementation(AActor * other, FVector locat
 	if (stopped)
 		return;
 
-	if (skill && (skill->GetInstigator() != other && GetOwner() != other))
+	if (other && skill && skill->Test2DCharacter != other && other->GetClass()->IsChildOf(ATest2DCharacter::StaticClass()))
 	{
-		UAttributeComponent* otherAttribComp = (UAttributeComponent*)other->GetComponentByClass(UAttributeComponent::StaticClass());
-		if (skill->attributeComponent->canTarget(otherAttribComp) && (actorsHit.Find(other) == -1))
+	
+		ATest2DCharacter * otherCharacter = (ATest2DCharacter*)other;
+
+		if (skill->Test2DCharacter->canTarget(otherCharacter) && (actorsHit.Find(other) == -1))
 		{
 			actorsHit.Add(other);
 
-			if (other->GetClass()->IsChildOf(ATest2DCharacter::StaticClass()))
-			{
-				if (otherAttribComp != nullptr && otherAttribComp->IsValidLowLevel())
-				{
-					otherAttribComp->TakeDamage(
-						skill->attributeComponent,
-						skill,
-						skill->skillUseID,
-						EDmgType::DT_Skill,
-						skill->skillData,
-						skill->attributeComponent->totalStats,
-						locationOfCollision,
-						skill->attributeComponent->damageTextActorStyle
-						);
-				}
-			}
+			otherCharacter->TakeDamageTest(
+				skill->Test2DCharacter,
+				skill,
+				skill->skillUseID,
+				EDmgType::DT_Skill,
+				skill->skillData,
+				skill->Test2DCharacter->totalStats,
+				locationOfCollision,
+				skill->Test2DCharacter->damageTextActorStyle
+				);
+
 			if (numPierces > 0)
 			{
 				numPierces--;
@@ -158,7 +155,7 @@ void ABaseProjectile::ProjectileHit_Implementation(AActor * other, FVector locat
 			}
 			else
 			{
-				if (otherAttribComp->bIsEvading || otherAttribComp->bIsInvuln)
+				if (otherCharacter->bIsEvading || otherCharacter->bIsInvuln)
 					stopProjectile = false;
 				else
 				{

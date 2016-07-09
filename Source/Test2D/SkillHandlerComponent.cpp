@@ -2,6 +2,7 @@
 
 #include "Test2D.h"
 #include "SkillHandlerComponent.h"
+#include "Test2DCharacter.h"
 #include "AttributeComponent.h"
 #include "Engine.h"
 #include "Net/UnrealNetwork.h"
@@ -29,25 +30,25 @@ void USkillHandlerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 }
-void USkillHandlerComponent::Init(UAttributeComponent*attribComp)
+void USkillHandlerComponent::Init(ATest2DCharacter * character)
 {
-	AttributeComponent = attribComp;
+	Test2DCharacter = character;
 
-	if (AttributeComponent)
+	if (Test2DCharacter)
 	{
-		LoadSkills(AttributeComponent);
-		AttributeComponent->onRespawnDelegate.AddDynamic(this, &USkillHandlerComponent::ReInitSkills);
+		LoadSkills(Test2DCharacter);
+		Test2DCharacter->onRespawnDelegate.AddDynamic(this, &USkillHandlerComponent::ReInitSkills);
 	}
 }
 // ...
-void USkillHandlerComponent::LoadSkills/*_Implementation*/(UAttributeComponent * attribComp)
+void USkillHandlerComponent::LoadSkills/*_Implementation*/(ATest2DCharacter * character)
 {
 	if (!GetOwner()->HasAuthority())
 		return;
 
-	if (attribComp != AttributeComponent && attribComp != nullptr)
+	if (character != Test2DCharacter && character != nullptr)
 	{
-		AttributeComponent = attribComp;
+		Test2DCharacter = character;
 	}
 
 	skillSlots.Empty();
@@ -66,7 +67,7 @@ void USkillHandlerComponent::ReInitSkills()
 	for (int i = 0; i < skillSlots.Num(); i++)
 	{
 		if (skillSlots[i])
-			skillSlots[i]->Init(GetOwner(), AttributeComponent, AttributeComponent ? AttributeComponent->GetOwner() : nullptr);
+			skillSlots[i]->Init(Test2DCharacter, GetOwner());
 	}
 }
 //bool USkillHandlerComponent::LoadSkills_Validate()
@@ -98,8 +99,8 @@ void USkillHandlerComponent::update/*_Implementation*/(float DeltaTime)
 				skillSlots[(uint8)currSlotInUse]->cancelSkill();
 
 			currSlotInUse = slotToUse;
-
-			skillSlots[(uint8)currSlotInUse]->activateSkill();
+			
+			skillSlots[(uint8)currSlotInUse]->activateSkill( ++skillCounter);
 		}
 		slotToUse = ESkillSlotTypes::SS_None;
 	}
@@ -137,7 +138,8 @@ void USkillHandlerComponent::setSkill_Implementation(ESkillSlotTypes skillSlot, 
 		skillSlots[(uint8)skillSlot]->Destroy();
 
 	if (skill)
-		skill->Init(GetOwner(), AttributeComponent, AttributeComponent ? AttributeComponent->GetOwner() : nullptr);
+		skill->Init(Test2DCharacter, GetOwner());
+
 	skillSlots[(uint8)skillSlot] = skill;
 	//OnTestDelegate.Broadcast(skillSlot, skillSlots[(uint8)skillSlot]);
 }

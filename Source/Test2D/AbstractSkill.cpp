@@ -2,6 +2,7 @@
 
 #include "Test2D.h"
 #include "AbstractSkill.h"
+#include "Test2DCharacter.h"
 
 #include "AttributeComponent.h"
 #include "DrawDebugHelpers.h"
@@ -11,11 +12,11 @@
 #include "Net/UnrealNetwork.h"
 
 
-void UAbstractSkill::Init(AActor * _owner, UAttributeComponent * _attributeComponent, AActor * _instigator)
+void UAbstractSkill::Init(ATest2DCharacter * _character, AActor * _owner)
 {
 	owner = _owner;
-	attributeComponent = _attributeComponent;
-	instigator = _instigator ? _instigator : owner;
+	Test2DCharacter = _character;
+	instigator = _character;
 
 	if (skillData.skillUpdateData.skillInterruptCooldown == 0.0f)
 		skillData.skillUpdateData.skillInterruptCooldown = skillData.skillUpdateData.skillCooldown;
@@ -32,7 +33,7 @@ void UAbstractSkill::Init(AActor * _owner, UAttributeComponent * _attributeCompo
 	InitSkillDescription();
 	//attributeComponent
 
-	ActiveSkillPassives = this->attributeComponent->applyStatus(SkillPassiveStatus, attributeComponent);
+	ActiveSkillPassives = Test2DCharacter->AttributeComponent->applyStatus(SkillPassiveStatus, Test2DCharacter);
 
 	setSkillHitBox();
 }
@@ -67,7 +68,8 @@ void UAbstractSkill::MulticastRPCFunc_spawnHitParticles_Implementation(FVector h
 		psys->Activate();
 	}
 }
-void UAbstractSkill::skillHit_Implementation(UAttributeComponent * hitAttribComp, AActor * hitObj, FAbstractSkillData otherSkillData, FVector hitLocation)
+
+void UAbstractSkill::skillHit_Implementation(ATest2DCharacter * hitCharacter, FAbstractSkillData otherSkillData, FVector hitLocation)
 {
 
 	if (!owner || !owner->HasAuthority())
@@ -85,18 +87,18 @@ void UAbstractSkill::skillHit_Implementation(UAttributeComponent * hitAttribComp
 	//hitAttribComp->getKnockedBack(kb);
 
 	// apply on hits
-	attributeComponent->applyStatus(attributeComponent->SelfStatusApplication_OnHit, attributeComponent);
-	attributeComponent->applyStatus(SelfStatusApplication_OnHit, attributeComponent);
+	Test2DCharacter->AttributeComponent->applyStatus(Test2DCharacter->SelfStatusApplication_OnHit, Test2DCharacter);
+	Test2DCharacter->AttributeComponent->applyStatus(SelfStatusApplication_OnHit, Test2DCharacter);
 
-	hitAttribComp->applyStatus(attributeComponent->EnemyStatusApplication_OnHit, attributeComponent);
-	hitAttribComp->applyStatus(EnemyStatusApplication_OnHit, attributeComponent);
+	hitCharacter->AttributeComponent->applyStatus(Test2DCharacter->EnemyStatusApplication_OnHit, Test2DCharacter);
+	hitCharacter->AttributeComponent->applyStatus(EnemyStatusApplication_OnHit, Test2DCharacter);
 
 	// do some cool particle effects
 
 	//onSkillHitDelegate.Broadcast(hitAttribComp);
-	attributeComponent->onSkillHitDelegate.Broadcast(hitAttribComp, skillUseID);
+	Test2DCharacter->onSkillHitDelegate.Broadcast(hitCharacter, skillUseID);
 }
-bool UAbstractSkill::skillHit_Validate(UAttributeComponent * hitAttribComp, AActor * hitObj, FAbstractSkillData otherSkillData, FVector hitLocation)
+bool UAbstractSkill::skillHit_Validate(ATest2DCharacter * hitCharacter, FAbstractSkillData otherSkillData, FVector hitLocation)
 {
 	return true;
 }
@@ -131,7 +133,7 @@ void UAbstractSkill::update_Implementation(float dt, FVector ToTargetDir, FVecto
 		return;
 	}
 
-	if (!owner->IsValidLowLevel() || !attributeComponent)
+	if (!owner->IsValidLowLevel() || !Test2DCharacter)
 	{
 		bSkillUpdating = false;
 		return;
@@ -151,7 +153,7 @@ void UAbstractSkill::update_Implementation(float dt, FVector ToTargetDir, FVecto
 		delay = 0.0f;
 		if (currNumHits == 0)
 		{
-			attributeComponent->applyStatus(SelfStatusApplication_OnStart, attributeComponent);
+			Test2DCharacter->AttributeComponent->applyStatus(SelfStatusApplication_OnStart, Test2DCharacter);
 		}
 		if (currNumHits < totalHits)
 		{
@@ -189,41 +191,35 @@ void UAbstractSkill::update_Implementation(float dt, FVector ToTargetDir, FVecto
 
 			int possibleTargetNum = possibleTargets.Num() < maxNumTargets ? possibleTargets.Num() : maxNumTargets;
 
-			for (int i = 0; i < possibleTargetNum; i++) {
-				AActor * currTarget = possibleTargets[i].GetActor();
-				if (currTarget != nullptr && currTarget->IsValidLowLevel() && currTarget != owner)
+			for (int i = 0; i < possibleTargetNum; i++)
+			{
+				ATest2DCharacter * currTarget = (ATest2DCharacter*)possibleTargets[i].GetActor();
+
+				if (currTarget != nullptr && currTarget->IsValidLowLevel() && currTarget != Test2DCharacter)
 				{
-					//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, "Actor being checked");
 
-					UAttributeComponent * targetAttribComponent = (UAttributeComponent*)currTarget->GetComponentByClass(UAttributeComponent::StaticClass());
-
-					if (targetAttribComponent != nullptr && targetAttribComponent->IsValidLowLevel())
-					{
-						//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, "Skill Hit!");
-
-						targetAttribComponent->TakeDamage(
-							attributeComponent,
-							this,
-							skillUseID,
-							EDmgType::DT_Skill,
-							skillData,
-							attributeComponent->totalStats,
-							possibleTargets[i].ImpactPoint,
-							attributeComponent->damageTextActorStyle
-							);
-					}
+					currTarget->TakeDamageTest(
+						Test2DCharacter,
+						this,
+						skillUseID,
+						EDmgType::DT_Skill,
+						skillData,
+						Test2DCharacter->totalStats,
+						possibleTargets[i].ImpactPoint,
+						Test2DCharacter->damageTextActorStyle
+						);
 				}
 			}
 			delay = skillData.skillUpdateData.timeBetweenHits;
 			if (skillData.skillInteractionInfo.isNumHitsModifiable)
 			{
 				delay /= ((float)totalHits / (float)skillData.skillData.numHits);
-				delay /= attributeComponent->totalStats.AttackSpeed;
+				delay /= Test2DCharacter->totalStats.AttackSpeed;
 			}
 
 			currNumHits++;
 			if (currNumHits == totalHits)
-				delay = skillData.skillUpdateData.afterCast / attributeComponent->totalStats.AttackSpeed;
+				delay = skillData.skillUpdateData.afterCast / Test2DCharacter->totalStats.AttackSpeed;
 		}
 		else
 		{
@@ -314,8 +310,9 @@ void UAbstractSkill::allocateTargets(TArray<FHitResult> &hitObjects, FVector cen
 
 	for (int i = hitObjects.Num() - 1; i >= 0; --i)
 	{
-		UAttributeComponent* attribComp = ((UAttributeComponent*)hitObjects[i].GetActor()->GetComponentByClass(UAttributeComponent::StaticClass()));
-		if (attribComp == nullptr || attribComp == attributeComponent || !attributeComponent->canTarget(attribComp))
+		if (Test2DCharacter == hitObjects[i].GetActor() || 
+			!hitObjects[i].GetActor()->GetClass()->IsChildOf(ATest2DCharacter::StaticClass()) || 
+			!Test2DCharacter->canTarget(((ATest2DCharacter*)hitObjects[i].GetActor())))
 		{
 			hitObjects.RemoveAt(i, 1, false);
 			continue;
@@ -332,20 +329,18 @@ void UAbstractSkill::SkillInterrupted_Implementation()
 	SkillMovement(skillMotionType, 0, FVector::ZeroVector, FVector::ZeroVector);
 }
 
-void UAbstractSkill::activateSkill()
+void UAbstractSkill::activateSkill(int _SkillUseID)
 {
-	if (attributeComponent)
+	if (Test2DCharacter)
 	{
-		attributeComponent->incrSkillUseID();
-
-		skillUseID = attributeComponent->getSkillUseID();
+		skillUseID = _SkillUseID;
 
 		totalHits = GetTotalHits();
 
 		if (skillData.skillData.numHits)
-			totalSkillDuration = ((totalHits * (skillData.skillUpdateData.timeBetweenHits) / (totalHits / skillData.skillData.numHits)) + skillData.skillUpdateData.skillWindUp + skillData.skillUpdateData.afterCast) / attributeComponent->totalStats.AttackSpeed;
+			totalSkillDuration = ((totalHits * (skillData.skillUpdateData.timeBetweenHits) / (totalHits / skillData.skillData.numHits)) + skillData.skillUpdateData.skillWindUp + skillData.skillUpdateData.afterCast) / Test2DCharacter->totalStats.AttackSpeed;
 		else
-			totalSkillDuration = skillData.skillUpdateData.skillWindUp + skillData.skillUpdateData.afterCast / attributeComponent->totalStats.AttackSpeed;
+			totalSkillDuration = skillData.skillUpdateData.skillWindUp + skillData.skillUpdateData.afterCast / Test2DCharacter->totalStats.AttackSpeed;
 
 		for (int i = 0; i < SelfStatusApplication_OnStart.Num(); i++)
 		{
@@ -403,7 +398,7 @@ bool UAbstractSkill::canBeUsed() {
 int UAbstractSkill::GetTotalHits()
 {
 	if (skillData.skillData.numHits > 0 && skillData.skillInteractionInfo.isNumHitsModifiable)
-		return ((skillData.skillData.numHits + attributeComponent->totalStats.AdditionalHits) * (1 + attributeComponent->totalStats.HitMultiplier));
+		return ((skillData.skillData.numHits + Test2DCharacter->totalStats.AdditionalHits) * (1 + Test2DCharacter->totalStats.HitMultiplier));
 
 	return skillData.skillData.numHits;
 }
@@ -455,7 +450,7 @@ void UAbstractSkill::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & Ou
 	DOREPLIFETIME(UAbstractSkill, bSkillUpdating);
 	DOREPLIFETIME(UAbstractSkill, skillAnimation);
 
-	DOREPLIFETIME(UAbstractSkill, attributeComponent);
+	DOREPLIFETIME(UAbstractSkill, Test2DCharacter);
 
 	DOREPLIFETIME(UAbstractSkill, skillName);
 	DOREPLIFETIME(UAbstractSkill, skillDescription);

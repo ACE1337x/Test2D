@@ -29,19 +29,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 		EWeaponType WeaponType = EWeaponType::NONE;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item_Stats")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item_Stats")
 		FPlayerAttributes baseStats;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item_Stats")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item_Stats")
 		FPlayerAttributes totalStats;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item_Stats")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item_Stats")
 		TArray<FStatusApplicationData> ItemEquipPassive;
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Item")
 		void UseFunc();
 
-	void Init_Implementation(UAttributeComponent * AttribComp, UInventoryComponent * InventoryComp);
+	void Init_Implementation(UInventoryComponent * InventoryComp);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Item")
-		void Init(UAttributeComponent * AttribComp, UInventoryComponent * InventoryComp);
+		void Init(UInventoryComponent * InventoryComp);
 };
