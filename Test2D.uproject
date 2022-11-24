@@ -1,34 +1,22 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "4.12",
+	"EngineAssociation": "5.1",
 	"Category": "",
 	"Description": "",
 	"Modules": [
 		{
 			"Name": "Test2D",
 			"Type": "Runtime",
-			"LoadingPhase": "Default",
-			"AdditionalDependencies": [
-				"CoreUObject",
-				"Engine",
-				"CableComponent",
-				"UMG"
-			]
+			"LoadingPhase": "Default"
 		}
 	],
 	"Plugins": [
 		{
-			"Name": "Paper2D",
-			"Enabled": true
-		},
-		{
-			"Name": "CodeView",
-			"Enabled": true
+			"Name": "ModelingToolsEditorMode",
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
 		}
-	],
-	"TargetPlatforms": [
-		"MacNoEditor",
-		"WindowsNoEditor",
-		"IOS"
 	]
 }

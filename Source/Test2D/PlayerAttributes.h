@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "Object.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "PlayerAttributes.generated.h"
 

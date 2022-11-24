@@ -143,7 +143,7 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation, BlueprintCallable, Category = "Player Functions")
 		void MoveUp(float Value);
 
-	UFUNCTION(Server, Reliable, WithValidation, BlueprintCallable, Category = "Player Functions")
+	//UFUNCTION(Server, Reliable, WithValidation, BlueprintCallable, Category = "Player Functions")
 		void Jump();
 
 	UFUNCTION(Server, Reliable, WithValidation, BlueprintCallable, Category = "Player Functions")

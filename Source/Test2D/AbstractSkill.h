@@ -2,9 +2,8 @@
 
 #pragma once
 
-#include "Object.h"
+#include "UObject/Object.h"
 #include "AbstractSkillData.h"
-//#include "AbstractStatus.h"
 #include "BaseProjectile.h"
 #include "Status.h"
 #include "AbstractSkill.generated.h"

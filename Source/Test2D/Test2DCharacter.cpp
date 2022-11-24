@@ -1,11 +1,12 @@
 // Copyright 1998-2016 Epic Games, Inc. All Rights Reserved.
 
+#include "Test2DCharacter.h"
+
 #include "Test2D.h"
 
 #include "Kismet/KismetStringLibrary.h"
 #include "Engine.h"
 
-#include "Test2DCharacter.h"
 #include "PaperFlipbookComponent.h"
 #include "Components/TextRenderComponent.h"
 

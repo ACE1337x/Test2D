@@ -38,10 +38,10 @@ public:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item_Stats")
 		TArray<FStatusApplicationData> ItemEquipPassive;
 
-	UFUNCTION(BlueprintNativeEvent, Category = "Item")
+	//UFUNCTION(BlueprintNativeEvent, Category = "Item")
 		void UseFunc();
 
 	void Init_Implementation(UInventoryComponent * InventoryComp);
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Item")
+	//UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Item")
 		void Init(UInventoryComponent * InventoryComp);
 };

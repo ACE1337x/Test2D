@@ -1,7 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Test2D.h"
 #include "Item.h"
+
+#include "Test2D.h"
 #include "AttributeComponent.h"
 #include "InventoryComponent.h"
 #include "Net/UnrealNetwork.h"

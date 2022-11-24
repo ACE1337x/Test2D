@@ -1,7 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Test2D.h"
 #include "Status.h"
+
+#include "Test2D.h"
 #include "PaperFlipbookComponent.h"
 #include "ParticleSystemActor.h"
 #include "SkillHandlerComponent.h"
